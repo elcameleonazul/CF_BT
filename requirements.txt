@@ -1,6 +1,5 @@
-pulp
+pulp[cbc]
 pandas
 numpy
 streamlit
 streamlit-extras
-coin-or-cbc
