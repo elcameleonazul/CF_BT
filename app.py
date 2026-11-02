@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
-from pulp import LpMaximize, LpProblem, LpVariable, lpSum
+from pulp import LpMaximize, LpProblem, lpSum
 from streamlit_extras.let_it_rain import rain
 
 # Fonction pour charger toutes les startlists
@@ -79,9 +79,9 @@ if startlists:
             # Création du problème de maximisation
             prob = LpProblem("Meilleure_Equipe", LpMaximize)
             
-            # Variables de décision (CORRECTION ICI : remplacement de LpVariable.dicts)
+            # Variables de décision adaptées à PuLP 4.x via prob.add_variable
             x = {
-                coureur: LpVariable(f"Coureur_{i}", cat='Binary') 
+                coureur: prob.add_variable(f"Coureur_{i}", cat='Binary') 
                 for i, coureur in enumerate(selected_df['Rider'])
             }
             
@@ -97,9 +97,11 @@ if startlists:
             
             # Résolution du problème
             prob.solve()
-            list_selected = [v.name for v in prob.variables() if v.varValue == 1]
-            list_selected = [nom.replace('Coureur_', '').replace('_', ' ') for nom in list_selected]
+            
+            # Récupération propre des coureurs sélectionnés via le dictionnaire x
+            list_selected = [coureur for coureur, var in x.items() if var.varValue == 1]
             selected_coureurs_df = selected_df[selected_df['Rider'].isin(list_selected)]
+            
             result = []
             for pos in list(selected_coureurs_df.index):
                 if pos < len(points_grille):
